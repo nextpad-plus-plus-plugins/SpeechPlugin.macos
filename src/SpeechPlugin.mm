@@ -44,7 +44,7 @@
 
 // ── plugin-wide state ────────────────────────────────────────────────────────
 static const char *PLUGIN_NAME = "Speech";
-static const int   nbFunc      = 7;   // 5 commands + 1 separator + 1 settings item
+static const int   nbFunc      = 9;   // 7 commands + 2 separators (Speak/Stop/…/About)
 
 NppData  nppData;            // global so the SendMessage() compat macro resolves
 FuncItem funcItem[nbFunc];
@@ -360,6 +360,22 @@ static void OpenVoiceSettings() {
     }
 }
 
+// About — native NSAlert (macOS style).
+static void cmdAbout() {
+    showAlert("SpeechPlugin",
+              "SpeechPlugin for Notepad++ (macOS port)\n"
+              "Version 1.0.0\n\n"
+              "Reads the current document or selection aloud (text-to-speech).\n\n"
+              "Features:\n"
+              "- Speak the selection or the whole document\n"
+              "- Stop, pause and resume playback\n"
+              "- Choose a system voice and speaking rate\n\n"
+              "Original Windows plugin by Jim Xochellis (GPL v2)\n"
+              "macOS port by Andrey Letov\n"
+              "Project home: https://github.com/nextpad-plus-plus-plugins/SpeechPlugin.macos",
+              NSAlertStyleInformational);
+}
+
 // ── plugin exports ───────────────────────────────────────────────────────────
 extern "C" NPP_EXPORT void setInfo(NppData data) {
     nppData = data;
@@ -394,6 +410,15 @@ extern "C" NPP_EXPORT void setInfo(NppData data) {
     strncpy(funcItem[6]._itemName, "Voice & Rate...", NPP_MENU_ITEM_SIZE - 1);
     funcItem[6]._pFunc  = OpenVoiceSettings;
     funcItem[6]._pShKey = nullptr;
+
+    // Separator (host treats _pFunc == NULL as a separator item).
+    funcItem[7]._itemName[0] = '\0';
+    funcItem[7]._pFunc  = nullptr;
+    funcItem[7]._pShKey = nullptr;
+
+    strncpy(funcItem[8]._itemName, "About...", NPP_MENU_ITEM_SIZE - 1);
+    funcItem[8]._pFunc  = cmdAbout;
+    funcItem[8]._pShKey = nullptr;
 }
 
 extern "C" NPP_EXPORT const char *getName() { return PLUGIN_NAME; }
